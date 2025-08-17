@@ -9,6 +9,8 @@ COPY ["CardValidation.Web/CardValidation.Web.csproj", "CardValidation.Web/"]
 COPY ["CardValidation.Core/CardValidation.Core.csproj", "CardValidation.Core/"]
 RUN dotnet restore "CardValidation.Web/CardValidation.Web.csproj"
 
+COPY . .
+
 WORKDIR "/src/CardValidation.Web"
 RUN dotnet publish "CardValidation.Web.csproj" -c Release -o /app/publish
 
