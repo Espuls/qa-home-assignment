@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:24.0.5
+        options: --privileged
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build solution
+        run: dotnet build --configuration Release
+
+      - name: Run unit tests
+        run: |
+          dotnet test CardValidation.Core.Tests/CardValidation.Core.Tests.csproj --logger "trx;LogFileName=unit-core-tests.trx" --results-directory ./TestResults && dotnet test CardValidation.Web.Tests/CardValidation.Web.Tests.csproj --logger "trx;LogFileName=unit-web-tests.trx" --results-directory ./TestResults
+
+      - name: Run integration tests
+        run: |
+          dotnet test CardValidation.IntegrationTests/CardValidation.IntegrationTests.csproj --logger "trx;LogFileName=integration-tests.trx" --results-directory ./TestResults
+
+      - name: Report test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: ./TestResults/*.trx
+          reporter: dotnet-trx
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./TestResults/*.trx
+
+      - name: Build Docker image
+        run: docker build -t cardvalidation-app .
+
+      - name: Run Docker container (optional)
+        run: docker run --rm -d -p 8080:8080 cardvalidation-app

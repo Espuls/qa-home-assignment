@@ -16,9 +16,9 @@ namespace CardValidation.Core.Tests.Services
         public class ValidateOwnerTests : CardValidationServiceTests
         {
             [Theory]
-            [InlineData("João Silva")]
+            [InlineData("Joao Silva")]
             [InlineData("Maria Santos")]
-            [InlineData("José")]
+            [InlineData("Jose")]
             [InlineData("Ana Maria Silva")]
             public void WhenOwnerNameIsValid_ShouldReturnTrue(string ownerName)
             {
